@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!-- {% load static %} -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js 타임라인 체크박스</title>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="d3-timeline.js"></script>
+
+  <style type="text/css">
+  body {background-color: #ffffff;}
+  .timeline-wrap {
+    padding-top: 100px;
+    width: 1000px;
+    margin: 0 auto;
+  }
+  svg text {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #ddd;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-family: sans-serif;
+    font-size: 10px;
+  }
+
+  svg image,
+  g {cursor: pointer;}
+  .timeline-label {
+    font-size: 12px;
+    cursor: pointer;
+  }
+  </style>
+  <script type="text/javascript">
+    window.onload = function() {
+
+      var timelineData = [
+        {label: "1", icon: "check.png", times: [{"color":"rgb(31, 119, 180)", "starting_time": 1355752800000, "ending_time": 1355759900000}]},
+        {label: "2", icon: "check.png", times: [{"color":"rgb(31, 119, 180)", "starting_time": 1355759910000, "ending_time": 1355761900000}]},
+        {label: "3", icon: "check.png", times: [{"color":"rgb(31, 119, 180)", "starting_time": 1355761910000, "ending_time": 1355763910000}]},
+      ];
+
+      var width = 1000;
+      
+      function timelineCheckbox() {
+        var graph = d3.timeline()
+          .width(width)
+          .stack()
+          .margin({left:65, right:30, top:0, bottom:0})
+          .click(function (d, i, datum) {
+            // 체크 여부 확인
+            const isChecked = document.querySelector(`.check_${i}`).classList.contains('checked');
+            
+            if(isChecked) {
+              d3.select(`.check_${i}`).attr('class', `check_${i}`)
+              .attr('href', 'check.png');
+              d3.select(`.timelineSeries_${i}`).style('fill', 'rgb(31, 119, 180)');
+            }
+            else {
+              d3.select(`.check_${i}`).attr('class', `check_${i} checked`)
+              .attr('href', 'checked.png');
+              d3.select(`.timelineSeries_${i}`).style('fill', 'rgb(237, 86, 86)');
+            }
+
+          })
+          .scroll(function (x, scale) {
+            $("#scrolled_date").text(scale.invert(x) + " to " + scale.invert(x+width));
+          });
+
+        var svg = d3.select("#timelineCheckbox").append("svg").attr("width", width)
+          .datum(timelineData).call(graph);
+      }
+
+      timelineCheckbox();
+
+      // 체크박스 초기 설정
+      d3.selectAll('image.timeline-label').attr('class', function(d, i) {
+        return `check_${i}`;
+      }).attr('x', '0')
+        .attr('width', 16)
+        .attr('height', 16);
+
+      // 레이블 초기 설정
+      d3.selectAll('text.timeline-label').attr('class', function(d, i) {
+        return `timeline-label label-${i}`;
+      }).attr('x', '30');
+
+      // 체크박스 클릭
+      const checkBox = document.querySelectorAll('#timelineCheckbox svg image');
+      const checkAllBtn = document.querySelector('#checkAllBtn');
+
+      checkBox.forEach((item, index) => {
+          item.addEventListener('click', event => {            
+            // 체크 여부 확인
+            const isChecked = item.classList.contains('checked');
+            
+            if(isChecked) {
+              item.classList.remove('checked');
+              item.setAttribute('href', 'check.png');
+              document.querySelector(`.timelineSeries_${index}`).style.fill = 'rgb(31, 119, 180)';
+            }
+            else {
+              item.classList.add('checked');
+              item.setAttribute('href', 'checked.png');
+              document.querySelector(`.timelineSeries_${index}`).style.fill = 'rgb(237, 86, 86)';
+            }
+          });
+      });
+
+      // 전체 선택
+      checkAllBtn.addEventListener('click', function(){
+        checkBox.forEach((item, index) => {
+          const isChecked = item.classList.contains('checked');
+            
+          if(!isChecked) {
+            item.classList.add('checked');
+            item.setAttribute('href', 'checked.png');
+            document.querySelector(`.timelineSeries_${index}`).style.fill = 'rgb(237, 86, 86)';
+          }
+        });
+      });
+    }
+  </script>
+</head>
+<body>
+  <div class="timeline-wrap">
+    <h3>D3.js 타임라인 체크박스</h3>
+    <div class="d-flex mb-2">
+      <div class="ms-auto">
+        <button class="btn btn-sm btn-x-small btn-light-gray" id="checkAllBtn">전체 선택</button>
+      </div>
+    </div>
+    <div id="timelineCheckbox"></div>
+  </div>
+
+</body>
+</html>
